@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Money Terminal — {{ sector_name }} Picks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .sector-header {
+            padding: 3rem 1.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--surface-2) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sector-title {
+            font-size: 2.5rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .sector-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .picks-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .picks-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pick-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .pick-card:hover {
+            background: var(--surface-3);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .pick-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .pick-rank {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-dim);
+            width: 30px;
+            text-align: center;
+        }
+
+        .pick-rank.top3 {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        }
+
+        .pick-sym {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            width: 70px;
+        }
+
+        .pick-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .pick-price {
+            font-family: var(--mono);
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .pick-target {
+            font-family: var(--mono);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .pick-upside {
+            font-family: var(--mono);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .pick-upside.positive {
+            color: var(--green);
+        }
+
+        .pick-upside.negative {
+            color: var(--red);
+        }
+
+        .pick-right {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" style="text-decoration:none;">
+                <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+            </a>
+            <span class="logo-sub">Institutional Intelligence Terminal</span>
+        </div>
+    </header>
+
+    <!-- ═══ SECTOR NAVIGATION ═══ -->
+    <nav class="sector-nav-bar">
+        <a href="/sector/Artificial%20Intelligence%20(AI)" class="sector-nav-item">AI</a>
+        <a href="/sector/Databases%20%26%20Cloud" class="sector-nav-item">Databases & Cloud</a>
+        <a href="/sector/Retail" class="sector-nav-item">Retail</a>
+        <a href="/sector/Healthcare" class="sector-nav-item">Healthcare</a>
+        <a href="/sector/Energy" class="sector-nav-item">Energy</a>
+        <a href="/sector/Financial%20Services" class="sector-nav-item">Financials</a>
+        <a href="/sector/Real%20Estate" class="sector-nav-item">Real Estate</a>
+        <a href="/sector/Technology" class="sector-nav-item">Technology</a>
+        <a href="/sector/Cybersecurity" class="sector-nav-item">Cybersecurity</a>
+        <a href="/sector/Automotive" class="sector-nav-item">Automotive</a>
+        <a href="/news" class="sector-nav-item" style="border-color: #ff3366; color: #ff3366;">📺 News Hub</a>
+    </nav>
+
+    <section class="sector-header">
+        <h2 class="sector-title">Top 10 Picks: {{ sector_name }}</h2>
+        <p class="sector-subtitle">High-conviction upside targets selected for the {{ sector_name }} sector.</p>
+    </section>
+
+    <main class="picks-container">
+        <div id="loadingState" class="loading-shimmer" style="height:100px;border-radius:12px;">Scanning sector...</div>
+        <div id="picksGrid" class="picks-grid" style="display:none;"></div>
+    </main>
+
+    <script>
+        const sector = "{{ sector_name }}";
+
+        function changeClass(val) {
+            return val >= 0 ? "positive" : "negative";
+        }
+
+        async function fetchPicks() {
+            try {
+                const r = await fetch(`/api/sector-picks?sector=${encodeURIComponent(sector)}&t=${Date.now()}`);
+                const data = await r.json();
+                const grid = document.getElementById("picksGrid");
+                document.getElementById("loadingState").style.display = "none";
+                grid.style.display = "flex";
+
+                if (!data || !data.picks || !data.picks.length) {
+                    grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:3rem;">No picks available for this sector currently.</div>';
+                    return;
+                }
+
+                grid.innerHTML = data.picks.map((p, i) => {
+                    const rankClass = i < 3 ? " top3" : "";
+                    const pTarget = p.analyst_target ? "$" + p.analyst_target.toFixed(2) : "—";
+                    const pPrice = p.price ? "$" + p.price.toFixed(2) : "—";
+                    const uPctStr = p.upside_pct != null ? (p.upside_pct > 0 ? "+" : "") + p.upside_pct.toFixed(2) + "%" : "—";
+
+                    return `
+            <a href="/stock/${p.symbol}" class="pick-card">
+              <div class="pick-left">
+                <div class="pick-rank${rankClass}">${i + 1}</div>
+                <div class="pick-sym">${p.symbol}</div>
+                <div class="pick-name">${p.name || ""}</div>
+              </div>
+              <div class="pick-right">
+                <div style="display:flex;gap:2rem;align-items:center;">
+                  <div style="text-align:right;">
+                    <div class="pick-price">${pPrice}</div>
+                    <div class="pick-target">Target: ${pTarget}</div>
+                  </div>
+                  <div class="pick-upside ${changeClass(p.upside_pct)}">
+                    ${uPctStr} <span style="font-size:0.8rem;font-weight:400;">Upside</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          `;
+                }).join("");
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("loadingState").textContent = "Failed to load sector picks.";
+            }
+        }
+
+        fetchPicks();
+<script>
+// Pause polling when tab is hidden to save API calls
+(function() {
+    const _origSetInterval = window.setInterval;
+    const _intervals = [];
+    window.setInterval = function(fn, ms) {
+        const id = _origSetInterval(fn, ms);
+        _intervals.push({ id, fn, ms });
+        return id;
+    };
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            _intervals.forEach(i => clearInterval(i.id));
+        } else {
+            _intervals.forEach((i, idx) => {
+                i.fn();
+                _intervals[idx].id = _origSetInterval(i.fn, i.ms);
+            });
+        }
+    });
+})();
+</script>
+</body>
+
+</html>

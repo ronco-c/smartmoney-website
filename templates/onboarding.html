@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Money Terminal — Onboarding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .logo-accent {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            transform: scale(1.2);
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .options-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .option-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .option-btn:hover {
+            border-color: rgba(0, 210, 255, 0.5);
+        }
+
+        .option-btn.selected {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #2563eb;
+        }
+
+        .btn-submit:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            transition: color 0.2s;
+        }
+
+        .btn-back:hover {
+            color: var(--text);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo">SMART<span class="logo-accent">MONEY</span></div>
+            <div class="subtitle">Let's personalize your dashboard</div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+            <div class="step-dot" id="dot-3"></div>
+        </div>
+
+        <!-- Step 1: Experience -->
+        <div class="wizard-step active" id="step-1">
+            <div class="question">What's your investing experience level?</div>
+            <div class="options-grid">
+                <div class="option-btn single-select" data-group="exp" data-val="Beginner">
+                    🐣 <b>Beginner</b><br><span style="font-size:12px;color:var(--text-muted)">Just getting
+                        started</span>
+                </div>
+                <div class="option-btn single-select" data-group="exp" data-val="Intermediate">
+                    📈 <b>Intermediate</b><br><span style="font-size:12px;color:var(--text-muted)">I know the basics
+                        well</span>
+                </div>
+                <div class="option-btn single-select" data-group="exp" data-val="Advanced">
+                    🐋 <b>Advanced</b><br><span style="font-size:12px;color:var(--text-muted)">I trade regularly</span>
+                </div>
+            </div>
+            <button class="btn-submit" onclick="nextStep(2)" id="btn-next-1" disabled>Continue →</button>
+        </div>
+
+        <!-- Step 2: Goals -->
+        <div class="wizard-step" id="step-2">
+            <div class="question">What are you investing for? (Select one or more)</div>
+            <div class="options-grid cols-2">
+                <div class="option-btn multi-select" data-group="goals" data-val="Growth">🚀 Aggressive Growth</div>
+                <div class="option-btn multi-select" data-group="goals" data-val="Dividends">💰 Dividends & Income</div>
+                <div class="option-btn multi-select" data-group="goals" data-val="Preservation">🛡️ Wealth Preservation
+                </div>
+                <div class="option-btn multi-select" data-group="goals" data-val="Speculation">🎲 Short-Term Trading
+                </div>
+            </div>
+            <button class="btn-submit" onclick="nextStep(3)" id="btn-next-2" disabled>Continue →</button>
+            <button class="btn-back" onclick="prevStep(1)">← Back</button>
+        </div>
+
+        <!-- Step 3: Sectors -->
+        <div class="wizard-step" id="step-3">
+            <div class="question">Which sectors interest you most?</div>
+            <div class="options-grid cols-2">
+                <div class="option-btn multi-select" data-group="sectors" data-val="AI & Tech">💻 AI & Tech</div>
+                <div class="option-btn multi-select" data-group="sectors" data-val="Healthcare">🏥 Healthcare</div>
+                <div class="option-btn multi-select" data-group="sectors" data-val="Energy">⚡ Energy</div>
+                <div class="option-btn multi-select" data-group="sectors" data-val="Financials">🏦 Financials</div>
+                <div class="option-btn multi-select" data-group="sectors" data-val="Real Estate">🏢 Real Estate</div>
+                <div class="option-btn multi-select" data-group="sectors" data-val="Retail">🛍️ Retail</div>
+            </div>
+            <button class="btn-submit" onclick="submitOnboarding()" id="btn-submit">Complete Setup 🚀</button>
+            <button class="btn-back" onclick="prevStep(2)">← Back</button>
+        </div>
+
+    </div>
+
+    <script>
+        const state = {
+            experience: null,
+            goals: [],
+            sectors: []
+        };
+
+        // Single Select Logic (Step 1)
+        document.querySelectorAll('.single-select').forEach(el => {
+            el.addEventListener('click', function () {
+                const group = this.dataset.group;
+                document.querySelectorAll(`.single-select[data-group="${group}"]`).forEach(btn => btn.classList.remove('selected'));
+                this.classList.add('selected');
+                state[group === 'exp' ? 'experience' : group] = this.dataset.val;
+                checkStep1();
+            });
+        });
+
+        // Multi Select Logic (Step 2 & 3)
+        document.querySelectorAll('.multi-select').forEach(el => {
+            el.addEventListener('click', function () {
+                this.classList.toggle('selected');
+                const group = this.dataset.group;
+                const val = this.dataset.val;
+
+                if (this.classList.contains('selected')) {
+                    state[group].push(val);
+                } else {
+                    state[group] = state[group].filter(i => i !== val);
+                }
+
+                if (group === 'goals') checkStep2();
+            });
+        });
+
+        function checkStep1() {
+            document.getElementById('btn-next-1').disabled = !state.experience;
+        }
+
+        function checkStep2() {
+            document.getElementById('btn-next-2').disabled = state.goals.length === 0;
+        }
+
+        function nextStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+
+            document.querySelectorAll('.step-dot').forEach(el => el.classList.remove('active'));
+            document.getElementById(`dot-${step}`).classList.add('active');
+        }
+
+        function prevStep(step) {
+            nextStep(step);
+        }
+
+        async function submitOnboarding() {
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = 'Saving... ⏳';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/onboarding', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+
+                if (res.ok) {
+                    btn.innerHTML = 'Success! Redirecting... ✅';
+                    setTimeout(() => window.location.href = '/', 1000);
+                } else {
+                    btn.innerHTML = 'Error. Try Again.';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                btn.innerHTML = 'Network Error';
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Money Terminal — Institutional Intelligence Dashboard</title>
+  <meta name="description"
+    content="Track 12 major institutions. Cross-referenced consensus picks. Real-time breaking news with SELL alerts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <!-- ═══ AMBIENT BACKGROUND GLOW ═══ -->
+  <div class="ambient-glow"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- ═══ BREAKING NEWS TICKER ═══ -->
+  <div id="news-ticker" class="news-ticker">
+    <div class="ticker-label"><span class="ticker-dot"></span><span class="ticker-live-text">LIVE</span></div>
+    <div class="ticker-track">
+      <div class="ticker-content" id="ticker-content">
+        Loading market intelligence...
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-block">
+        <h1 class="logo">
+          <span class="logo-icon">◆</span>
+          SMART<span class="logo-accent">MONEY</span>
+        </h1>
+        <span class="logo-sub">Institutional Intelligence Terminal</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="search-box">
+        <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search any stock..." autocomplete="off">
+        <div id="search-results" class="search-results" style="display:none"></div>
+      </div>
+      <div id="auth-controls" class="auth-controls">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ LIVE MARKET INDICES ═══ -->
+  <div class="market-bar-wrapper">
+    <div id="market-bar" class="market-bar">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- ═══ TOP CATEGORY NAVIGATION ═══ -->
+  <nav class="sector-nav-bar">
+    <a href="/category/allocator" class="sector-nav-item"><span class="nav-icon">✨</span> Smart $10k Allocator</a>
+    <a href="/category/dividend-picks" class="sector-nav-item"><span class="nav-icon">💰</span> Top 25 Dividend Picks</a>
+    <a href="/sector/Artificial%20Intelligence%20(AI)" class="sector-nav-item"><span class="nav-icon">📊</span> Top 10 Sector Picks</a>
+    <a href="/category/big-money-movers" class="sector-nav-item"><span class="nav-icon">💰</span> Big Money Movers</a>
+    <a href="/category/hot-stocks" class="sector-nav-item"><span class="nav-icon">🔥</span> Hot Stocks</a>
+    <a href="/category/watchlist" class="sector-nav-item"><span class="nav-icon">⭐</span> Watchlist</a>
+    <a href="/category/big-tech-portfolios" class="sector-nav-item"><span class="nav-icon">🐳</span> Big Tech Portfolios</a>
+    <a href="/news" class="sector-nav-item"><span class="nav-icon">📺</span> News Hub</a>
+    <a href="/learn" class="sector-nav-item"><span class="nav-icon">📚</span> Study With Us</a>
+  </nav>
+
+  <!-- ═══ KPI DASHBOARD SUMMARY ═══ -->
+  <div id="kpiRow" class="kpi-row">
+    <div class="kpi-card" id="kpiMarketMood">
+      <div class="kpi-glow mood"></div>
+      <div class="kpi-icon">🌡️</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Market Mood</div>
+        <div class="kpi-value" id="kpiMoodValue">—</div>
+      </div>
+    </div>
+    <div class="kpi-card" id="kpiSellAlerts">
+      <div class="kpi-glow alerts"></div>
+      <div class="kpi-icon">🚨</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Sell Alerts</div>
+        <div class="kpi-value" id="kpiSellValue">0</div>
+      </div>
+    </div>
+    <div class="kpi-card" id="kpiTopGainer">
+      <div class="kpi-glow gainer"></div>
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Top Gainer</div>
+        <div class="kpi-value" id="kpiGainerValue">—</div>
+      </div>
+    </div>
+    <div class="kpi-card" id="kpiAIConfidence">
+      <div class="kpi-glow ai"></div>
+      <div class="kpi-icon">🤖</div>
+      <div class="kpi-body">
+        <div class="kpi-label">AI Confidence</div>
+        <div class="kpi-value" id="kpiConfidenceValue">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ AI MORNING BRIEF ═══ -->
+  <div class="content-wrapper">
+    <div id="aiMorningBriefCard" class="ai-brief-card" style="display: none;">
+      <div class="ai-brief-header">
+        <h2>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          Your Daily AI Market Brief
+        </h2>
+        <span class="ai-powered-badge">Powered by Gemini</span>
+      </div>
+      <div id="aiBriefContent" class="ai-brief-body">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ALPHA SCREENER: NEXT BIG STOCK ═══ -->
+  <div class="content-wrapper">
+    <div class="card alpha-screener-card">
+      <div class="card-header alpha-header-special">
+        <div>
+          <h2>
+            <span class="header-icon">🚀</span>
+            Next Big Stock — Multi-Parameter Screener
+          </h2>
+          <span class="card-badge">15+ signals · Historical explosive growth patterns · Updated hourly</span>
+        </div>
+        <span id="alpha-updated" class="timestamp-badge"></span>
+      </div>
+      <div class="card-body" id="alpha-screener-body">
+        <div class="loading-shimmer">Scanning 200+ stocks across 7 sectors for explosive growth signals...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN GRID ═══ -->
+  <main class="dashboard">
+
+    <!-- LEFT COLUMN: Consensus Picks + Institutions -->
+    <section class="col-main">
+
+      <!-- ─── Top 25 Consensus Picks ─── -->
+      <div class="card card-consensus">
+        <div class="card-header">
+          <h2><span class="header-icon">🏆</span> Top 25 Consensus Picks</h2>
+          <span class="card-badge">Cross-referenced across 12 institutions · QoQ change</span>
+        </div>
+        <div class="card-body" id="consensus-picks">
+          <div class="loading-shimmer">Analyzing SEC 13F filings from 12 major institutions...</div>
+        </div>
+      </div>
+
+      <!-- ─── Institution Browser ─── -->
+      <div class="card card-institutions">
+        <div class="card-header">
+          <h2><span class="header-icon">🏦</span> Institution Portfolios</h2>
+          <span class="card-badge" id="inst-count">12 firms tracked</span>
+        </div>
+        <div class="card-body">
+          <div class="inst-grid" id="institutions-grid">
+            <div class="loading-shimmer">Loading institutional portfolios from SEC EDGAR...</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ═══ Institution Detail Modal ═══ -->
+  <div id="inst-modal" class="modal" style="display:none">
+    <div class="modal-backdrop" onclick="closeModal()"></div>
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="inst-modal-body">Loading...</div>
+    </div>
+  </div>
+
+  <!-- ═══ Whale Tracker Modal ═══ -->
+  <div id="whale-modal" class="modal" style="display:none">
+    <div class="modal-backdrop" onclick="closeWhaleModal()"></div>
+    <div class="modal-content whale-modal-content" style="max-width: 800px; padding: 30px;">
+      <button class="modal-close" onclick="closeWhaleModal()">✕</button>
+      <div id="whale-modal-body">
+        <div class="whale-modal-header">
+          <div>
+            <h2 class="whale-title">🐳 Big Tech Portfolios</h2>
+            <p class="whale-subtitle">Real-time tracking of strategic 13F and corporate holdings.</p>
+          </div>
+        </div>
+
+        <div class="whale-tabs">
+          <button class="whale-tab active" onclick="loadWhaleData('NVDA')">Nvidia</button>
+          <button class="whale-tab" onclick="loadWhaleData('AAPL')">Apple</button>
+          <button class="whale-tab" onclick="loadWhaleData('GOOGL')">Alphabet</button>
+          <button class="whale-tab" onclick="loadWhaleData('MSFT')">Microsoft</button>
+          <button class="whale-tab" onclick="loadWhaleData('AMZN')">Amazon</button>
+          <button class="whale-tab" onclick="loadWhaleData('TSM')">TSMC</button>
+          <button class="whale-tab" onclick="loadWhaleData('META')">Meta Platforms</button>
+          <button class="whale-tab" onclick="loadWhaleData('AVGO')">Broadcom</button>
+          <button class="whale-tab" onclick="loadWhaleData('TSLA')">Tesla</button>
+          <button class="whale-tab" onclick="loadWhaleData('BRK-B')">Berkshire Hathaway</button>
+          <button class="whale-tab" onclick="loadWhaleData('WMT')">Walmart</button>
+          <button class="whale-tab" onclick="loadWhaleData('LLY')">Eli Lilly</button>
+          <button class="whale-tab" onclick="loadWhaleData('SSNLF')">Samsung</button>
+          <button class="whale-tab" onclick="loadWhaleData('JPM')">JPMorgan Chase</button>
+          <button class="whale-tab" onclick="loadWhaleData('XOM')">Exxon Mobil</button>
+          <button class="whale-tab" onclick="loadWhaleData('V')">Visa</button>
+          <button class="whale-tab" onclick="loadWhaleData('JNJ')">Johnson &amp; Johnson</button>
+          <button class="whale-tab" onclick="loadWhaleData('ASML')">ASML Holding</button>
+        </div>
+
+        <div id="whale-content-area" class="whale-content-area">
+          <div class="loading-shimmer" style="text-align: center; padding-top: 100px;">Selecting Whale Data...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="footer-logo"><span class="logo-icon-sm">◆</span> SMART<span class="logo-accent">MONEY</span></span>
+          <span class="footer-tagline">Institutional Intelligence Terminal</span>
+        </div>
+        <div class="footer-links">
+          <a href="/learn">Education</a>
+          <a href="/news">News Hub</a>
+          <a href="/signal">Signal Engine</a>
+        </div>
+        <div class="footer-disclaimer">
+          <strong>Disclaimer:</strong> Smart Money Terminal provides market data and AI-generated analysis for
+          informational purposes only. This is not financial advice. Always do your own research and consult a licensed
+          financial advisor before making investment decisions. Past performance does not guarantee future results.
+        </div>
+        <div class="footer-copy">&copy; 2025 Smart Money Terminal. All rights reserved.</div>
+      </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/ai_chat.js"></script>
+<script>
+// Pause polling when tab is hidden to save API calls
+(function() {
+    const _origSetInterval = window.setInterval;
+    const _intervals = [];
+    window.setInterval = function(fn, ms) {
+        const id = _origSetInterval(fn, ms);
+        _intervals.push({ id, fn, ms });
+        return id;
+    };
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            _intervals.forEach(i => clearInterval(i.id));
+        } else {
+            _intervals.forEach((i, idx) => {
+                i.fn();
+                _intervals[idx].id = _origSetInterval(i.fn, i.ms);
+            });
+        }
+    });
+})();
+</script>
+</body>
+
+</html>

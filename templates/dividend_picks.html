@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Money Terminal — Top 25 Dividend Picks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .category-header {
+            padding: 3rem 1.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--surface-2) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .category-title {
+            font-size: 2.5rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .picks-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .news-item {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" style="text-decoration:none;">
+                <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+            </a>
+            <span class="logo-sub">Institutional Intelligence Terminal</span>
+        </div>
+    </header>
+
+    <section class="category-header">
+        <h2 class="category-title">💰 Top 25 Dividend Picks</h2>
+        <p class="category-subtitle">High-yield opportunities cross-referenced against institutional sentiment.</p>
+    </section>
+
+    <main class="picks-container">
+        <div class="card card-news">
+            <div class="card-body" id="dividend-picks-feed">
+                <div class="loading-shimmer">Scanning high-yield opportunities...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Local script to fetch and render specifically for this page so app.js remains clean
+        async function loadDividendPicksPage() {
+            const listEl = document.getElementById("dividend-picks-feed");
+
+            const data = await apiFetch("/api/dividend-picked");
+            if (!data || !data.picks || !data.picks.length) {
+                listEl.innerHTML = '<div class="loading-shimmer">No dividend picks available.</div>';
+                return;
+            }
+
+            listEl.innerHTML = '<div class="news-list" style="max-height:100%;">' + data.picks.map((item, i) => {
+                const isStrong = item.analyst_rating === "Strong Buy";
+                const badgeClass = isStrong ? "bullish" : "caution";
+                const badgeText = isStrong ? "STRONG BUY" : "BUY";
+                const rankClass = i < 3 ? "rank-number top3" : "rank-number";
+
+                const firms = item.analyst_firms && item.analyst_firms.length
+                    ? `Analysis by ${item.analyst_firms.slice(0, 2).join(", ")}`
+                    : "Consensus Analysis";
+
+                const metricsHtml = `
+          <div class="metrics-row">
+            <span class="metric-item" title="Price to Earnings Ratio">P/E ${item.metrics.pe}</span>
+            <span class="metric-divider">|</span>
+            <span class="metric-item" title="Earnings Per Share">EPS ${item.metrics.eps}</span>
+            <span class="metric-divider">|</span>
+            <span class="metric-item" title="Payout Ratio">Payout ${item.metrics.payout}%</span>
+          </div>
+        `;
+
+                return `
+          <div class="news-item dividend-item" onclick="window.location='/stock/${item.symbol}'">
+            <div class="${rankClass}">${i + 1}</div>
+            <img src="${item.logo_url}" class="company-logo" alt="${item.symbol}" onerror="this.style.display='none'">
+            
+            <div class="news-body">
+              <div class="news-header">
+                <span class="news-title">${escHtml(item.name)} (${item.symbol})</span>
+                <span class="news-alert-badge ${badgeClass}">${badgeText}</span>
+              </div>
+              
+              <div class="news-source">
+                <span class="highlight-yield">Yield: ${item.dividend_yield.toFixed(2)}%</span>
+                <span class="highlight-upside" style="margin-left:8px">+${item.upside_pct.toFixed(2)}% Upside</span>
+              </div>
+              
+              <div class="analyst-firms">${firms}</div>
+              ${metricsHtml}
+            </div>
+          </div>`;
+            }).join("") + '</div>';
+        }
+
+        loadDividendPicksPage();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+# Database (too large, rebuilt on startup)
+smart_money.db
+smart_money.db-shm
+smart_money.db-wal
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Large data files
+picks_verify.json
+top_picks_final.json
+top_picks_final_V4.json
+top_picks_V3.json
+top_picks.json
+sec_tickers_cache.json

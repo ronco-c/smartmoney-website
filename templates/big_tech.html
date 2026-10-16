@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Money Terminal — Big Tech Portfolios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .picks-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-left">
+      <a href="/" style="text-decoration:none;">
+        <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+      </a>
+      <span class="logo-sub">Institutional Intelligence Terminal</span>
+    </div>
+  </header>
+
+  <!-- ═══ SECTOR NAVIGATION ═══ -->
+  <nav class="sector-nav-bar">
+    <a href="/category/dividend-picks" class="sector-nav-item">💰 Top 25 Dividend Picks</a>
+    <a href="/sector/Artificial%20Intelligence%20(AI)" class="sector-nav-item">📊 Top 10 Sector Picks</a>
+    <a href="/category/big-money-movers" class="sector-nav-item">💰 Big Money Movers</a>
+    <a href="/category/hot-stocks" class="sector-nav-item">🔥 Hot Stocks</a>
+    <a href="/category/watchlist" class="sector-nav-item">⭐ Watchlist</a>
+    <a href="/news" class="sector-nav-item" style="border-color: #ff3366; color: #ff3366;">📺 News Hub</a>
+    <a href="/category/big-tech-portfolios" class="sector-nav-item whale-nav-item"
+      style="background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(58, 123, 213, 0.1)); border-color: rgba(0, 210, 255, 0.3); color: #00d2ff;">🐳
+      Big Tech Portfolios</a>
+  </nav>
+
+  <main class="picks-container">
+
+    <!-- ─── Top 10 Whale Holdings ─── -->
+    <div class="card card-consensus" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <h2>🏆 Top 10 Big Tech Shared Holdings</h2>
+        <span class="card-badge">Aggregated by Total Capital Invested across all tracked portfolios</span>
+      </div>
+      <div class="card-body" id="whale-top10">
+        <div class="loading-shimmer">Calculating aggregate portfolio values...</div>
+      </div>
+    </div>
+
+    <!-- ─── Whale Portfolios ─── -->
+    <div class="card card-institutions">
+      <div class="card-header">
+        <h2>🐳 Select a Portfolio</h2>
+        <span class="card-badge">Real-time tracking of strategic 13F and corporate holdings</span>
+      </div>
+      <div class="card-body">
+        <div class="inst-grid" id="whale-grid">
+          <!-- Loaded via JS -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ Whale Tracker Modal ═══ -->
+  <div id="whale-modal" class="modal" style="display:none">
+    <div class="modal-backdrop" onclick="closeWhaleModal()"></div>
+    <div class="modal-content whale-modal-content" style="max-width: 900px; padding: 30px;">
+      <button class="modal-close" onclick="closeWhaleModal()">✕</button>
+      <div id="whale-modal-body">
+        <!-- Content injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script>
+    function formatMoney(val) {
+      if (!val && val !== 0) return "—";
+      const abs = Math.abs(val);
+      if (abs >= 1e12) return "$" + (val / 1e12).toFixed(1) + "T";
+      if (abs >= 1e9) return "$" + (val / 1e9).toFixed(1) + "B";
+      if (abs >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+      if (abs >= 1e3) return "$" + (val / 1e3).toFixed(0) + "K";
+      return "$" + val.toFixed(2);
+    }
+
+    function formatPct(val) {
+      if (val == null) return "";
+      const sign = val >= 0 ? "+" : "";
+      return sign + Number(val).toFixed(2) + "%";
+    }
+
+    function changeClass(val) {
+      return val >= 0 ? "up" : "down";
+    }
+
+    const WHALES = [
+      { ticker: 'NVDA', name: 'Nvidia Corp', mgr: 'Jensen Huang', total_pos: 4 },
+      { ticker: 'AAPL', name: 'Apple Inc.', mgr: 'Tim Cook', total_pos: 3 },
+      { ticker: 'GOOGL', name: 'Alphabet Inc.', mgr: 'Sundar Pichai', total_pos: 7 },
+      { ticker: 'MSFT', name: 'Microsoft Corp.', mgr: 'Satya Nadella', total_pos: 3 },
+      { ticker: 'AMZN', name: 'Amazon.com', mgr: 'Andy Jassy', total_pos: 3 },
+      { ticker: 'TSM', name: 'TSMC', mgr: 'C.C. Wei', total_pos: 2 },
+      { ticker: 'META', name: 'Meta Platforms', mgr: 'Mark Zuckerberg', total_pos: 3 },
+      { ticker: 'AVGO', name: 'Broadcom Inc.', mgr: 'Hock Tan', total_pos: 2 },
+      { ticker: 'TSLA', name: 'Tesla Inc.', mgr: 'Elon Musk', total_pos: 1 },
+      { ticker: 'BRK-B', name: 'Berkshire Hathaway', mgr: 'Warren Buffett', total_pos: 6 },
+      { ticker: 'WMT', name: 'Walmart Inc.', mgr: 'Doug McMillon', total_pos: 2 },
+      { ticker: 'LLY', name: 'Eli Lilly', mgr: 'David Ricks', total_pos: 2 },
+      { ticker: 'SSNLF', name: 'Samsung', mgr: 'Han Jong-hee', total_pos: 3 },
+      { ticker: 'JPM', name: 'JPMorgan Chase', mgr: 'Jamie Dimon', total_pos: 4 },
+      { ticker: 'XOM', name: 'Exxon Mobil', mgr: 'Darren Woods', total_pos: 2 },
+      { ticker: 'V', name: 'Visa Inc.', mgr: 'Ryan McInerney', total_pos: 3 },
+      { ticker: 'JNJ', name: 'Johnson & Johnson', mgr: 'Joaquin Duato', total_pos: 2 },
+      { ticker: 'ASML', name: 'ASML Holding', mgr: 'Peter Wennink', total_pos: 3 }
+    ];
+
+    function renderWhaleGrid() {
+      const grid = document.getElementById("whale-grid");
+      grid.innerHTML = WHALES.map(w => `
+        <div class="inst-card" onclick="openWhaleTrackerModal('${w.ticker}')" style="cursor:pointer; border-color: rgba(0, 210, 255, 0.2)">
+          <div class="inst-name">${w.name}</div>
+          <div class="inst-meta" style="margin-top: 8px;">
+            <span>Manager: ${w.mgr}</span>
+          </div>
+          <div class="inst-meta" style="margin-top: 5px;">
+            <span style="color: #00d2ff">${w.total_pos} positions tracked</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function fetchTop10() {
+      try {
+        const r = await fetch("/api/whale-top-picks");
+        const data = await r.json();
+        const container = document.getElementById("whale-top10");
+
+        if (!data || !data.picks || !data.picks.length) {
+          container.innerHTML = '<div style="color:var(--text-muted);">No data available.</div>';
+          return;
+        }
+
+        const rows = data.picks.map((p, i) => {
+          const rankClass = i < 3 ? " top3" : "";
+          const pPrice = p.price ? "$" + p.price.toFixed(2) : "—";
+          const dPct = p.change_percent != null ? p.change_percent : 0;
+          const whList = p.whales.join(", ");
+
+          return `
+            <tr onclick="window.location='/stock/${p.symbol}'" style="cursor:pointer; transition: background 0.2s;">
+              <td><span class="pick-rank${rankClass}">${i + 1}</span></td>
+              <td>
+                <div class="pick-symbol">${p.symbol}</div>
+                <div class="pick-name">${p.name}</div>
+              </td>
+              <td><span class="pick-price">${pPrice}</span></td>
+              <td><span class="pick-change ${changeClass(dPct)}">${formatPct(dPct)}</span></td>
+              <td>
+                <span class="pick-holders">${p.whales.length} Portfolio(s)</span>
+                <div class="pick-holders-list" style="color:var(--accent);">${whList}</div>
+              </td>
+              <td><span class="pick-value">${formatMoney(p.total_value)}</span></td>
+            </tr>
+          `;
+        }).join("");
+
+        container.innerHTML = `
+          <table class="picks-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Stock</th>
+                <th>Price</th>
+                <th>Today's Chg</th>
+                <th>Whale Owners</th>
+                <th>Est. Capital Invested</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } catch (err) {
+        console.error("Top 10 fetch error:", err);
+      }
+    }
+
+    /* Modal Logic */
+    function openWhaleTrackerModal(ticker) {
+      document.getElementById("whale-modal").style.display = "flex";
+      loadWhaleDataModal(ticker);
+    }
+
+    function closeWhaleModal() {
+      document.getElementById("whale-modal").style.display = "none";
+    }
+
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeWhaleModal(); });
+
+    async function loadWhaleDataModal(ticker) {
+      const body = document.getElementById("whale-modal-body");
+      body.innerHTML = '<div class="loading-shimmer" style="text-align:center; padding: 100px;">Fetching live portfolio data...</div>';
+
+      try {
+        const r = await fetch(`/api/whale-portfolio/${ticker}`);
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+
+        const rows = data.holdings.map((h, i) => {
+          const profitCls = h.profit_loss >= 0 ? 'color:var(--green)' : 'color:var(--red)';
+          const dayCls = h.day_change >= 0 ? 'color:var(--green)' : 'color:var(--red)';
+
+          let chg13fHtml = '<span style="color:var(--text-muted)">—</span>';
+          if (h.is_new) {
+            chg13fHtml = '<span style="color:var(--cyan);font-weight:700;font-size:12px">NEW BUY</span>';
+          } else if (h.shares_change_pct != null) {
+            const pct = h.shares_change_pct;
+            const cls = pct > 0 ? 'color:var(--green)' : (pct < 0 ? 'color:var(--red)' : 'color:var(--text-muted)');
+            const sign = pct > 0 ? '+' : '';
+            chg13fHtml = `<span style="${cls};font-family:var(--mono);font-size:12px;font-weight:${pct !== 0 ? '700' : '400'}">${sign}${pct.toFixed(1)}%</span>`;
+          }
+
+          return `
+            <tr onclick="window.location='/stock/${h.symbol}'" style="cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+              <td style="padding: 15px 10px; color: var(--text-muted);">${i + 1}</td>
+              <td style="padding: 15px 10px;"><strong style="color: var(--accent); font-size: 16px;">${h.symbol}</strong></td>
+              <td style="padding: 15px 10px; font-family: var(--mono);">${(h.shares).toLocaleString()}</td>
+              <td style="padding: 15px 10px;">${chg13fHtml}</td>
+              <td style="padding: 15px 10px;">
+                <div style="font-family: var(--mono); color: #fff;">${formatMoney(h.position_value)}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${(h.weight_percent || 0).toFixed(2)}% of Portfolio</div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+
+        body.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 25px;">
+            <div>
+              <h2 style="margin: 0; font-size: 28px; font-weight: 800; background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${data.name}</h2>
+              <p style="margin: 8px 0 0 0; color: #a0a0b0; font-size: 14px;">${data.description}</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 12px; color: #a0a0b0;">Manager</div>
+              <div style="color: #fff; font-weight: 500;">${data.manager}</div>
+            </div>
+          </div>
+          
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <th style="padding: 10px; font-weight: 600;">#</th>
+                <th style="padding: 10px; font-weight: 600;">Asset</th>
+                <th style="padding: 10px; font-weight: 600;">Shares</th>
+                <th style="padding: 10px; font-weight: 600;" title="Change in shares from last 13F filing">13F Change</th>
+                <th style="padding: 10px; font-weight: 600;">Position Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        body.innerHTML = '<div style="color:var(--red);text-align:center;padding:50px;">Failed to load data.</div>';
+      }
+    }
+
+    // Init
+    renderWhaleGrid();
+    fetchTop10();
+  </script>
+</body>
+
+</html>

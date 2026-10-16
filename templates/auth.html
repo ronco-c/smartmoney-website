@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Money Terminal — Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+
+        .logo-accent {
+            color: var(--accent);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .auth-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #2563eb;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .link {
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+            text-align: center;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo">SMART<span class="logo-accent">MONEY</span></div>
+        </div>
+
+        <!-- Toggle -->
+        <div class="auth-tabs" id="tabs">
+            <div class="auth-tab active" data-target="login-form">Login</div>
+            <div class="auth-tab" data-target="signup-form">Sign Up</div>
+        </div>
+
+        <div id="message-box" class="message"></div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-input" required>
+            </div>
+            <button type="submit" class="btn-submit">Log In</button>
+            <div class="form-footer">
+                <a class="link" onclick="showForgot()">Forgot Password?</a>
+            </div>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signup-form" class="auth-form hidden">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-input" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-input" required>
+            </div>
+            <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+
+        <!-- Forgot Password Form -->
+        <form id="forgot-form" class="auth-form hidden">
+            <div style="margin-bottom:16px; text-align:center;">
+                <h3 style="color:var(--text); font-size:16px; margin-bottom:8px;">Reset Password</h3>
+                <p style="color:var(--text-muted); font-size:12px;">Enter your email to receive a reset token.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" required>
+            </div>
+            <button type="submit" class="btn-submit">Get Reset Token</button>
+            <div class="form-footer">
+                <a class="link" onclick="showLogin()">Back to Login</a>
+            </div>
+        </form>
+
+        <form id="reset-form" class="auth-form hidden">
+            <div style="margin-bottom:16px; text-align:center;">
+                <h3 style="color:var(--text); font-size:16px; margin-bottom:8px;">Set New Password</h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Reset Token</label>
+                <input type="text" name="token" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password" class="form-input" required minlength="8">
+            </div>
+            <button type="submit" class="btn-submit">Reset Password</button>
+            <div class="form-footer">
+                <a class="link" onclick="showLogin()">Back to Login</a>
+            </div>
+        </form>
+        <div id="reset-link-container" class="form-footer hidden">
+            <a class="link" onclick="showReset()">I have a token</a>
+        </div>
+
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.auth-tab');
+        const forms = document.querySelectorAll('.auth-form');
+        const messageBox = document.getElementById('message-box');
+        const resetLinkContainer = document.getElementById('reset-link-container');
+
+        function showMessage(type, text) {
+            messageBox.className = `message ${type}`;
+            messageBox.textContent = text;
+            messageBox.style.display = 'block';
+        }
+
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        // Tab Logic
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const targetId = tab.dataset.target;
+                forms.forEach(f => f.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+                hideMessage();
+                resetLinkContainer.classList.add('hidden');
+            });
+        });
+
+        function showForgot() {
+            forms.forEach(f => f.classList.add('hidden'));
+            document.getElementById('forgot-form').classList.remove('hidden');
+            resetLinkContainer.classList.remove('hidden');
+            hideMessage();
+        }
+
+        function showLogin() {
+            document.querySelector('.auth-tab[data-target="login-form"]').click();
+        }
+
+        function showReset() {
+            forms.forEach(f => f.classList.add('hidden'));
+            document.getElementById('reset-form').classList.remove('hidden');
+            resetLinkContainer.classList.add('hidden');
+            hideMessage();
+        }
+
+        // API Logic
+        async function handleSubmit(e, url, successMsg) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            hideMessage();
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (!res.ok) {
+                    showMessage('error', result.error || 'An error occurred');
+                } else {
+                    showMessage('success', result.message || successMsg);
+                    if (url.includes('login') || url.includes('register')) {
+                        setTimeout(() => window.location.href = '/', 1000);
+                    }
+                    // If forgot password, show token (Simulation)
+                    if (result.token) {
+                        showMessage('success', 'Simulation Token: ' + result.token);
+                        // Open reset form for convenience
+                        setTimeout(() => {
+                            showReset();
+                            document.querySelector('input[name="token"]').value = result.token;
+                        }, 2000);
+                    }
+                }
+            } catch (err) {
+                showMessage('error', 'Network error');
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => handleSubmit(e, '/api/auth/login', 'Logged in successfully'));
+        document.getElementById('signup-form').addEventListener('submit', (e) => handleSubmit(e, '/api/auth/register', 'Account created! Redirecting...'));
+        document.getElementById('forgot-form').addEventListener('submit', (e) => handleSubmit(e, '/api/auth/forgot-password', 'Token generated'));
+        document.getElementById('reset-form').addEventListener('submit', (e) => handleSubmit(e, '/api/auth/reset-password', 'Password reset! Please log in.'));
+    </script>
+
+</body>
+
+</html>

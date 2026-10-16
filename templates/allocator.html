@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Money Terminal — Portfolio Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    /* ═══ PAGE ═══ */
+    .category-header {
+      padding: 3.5rem 1.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .category-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, transparent);
+      border-radius: 2px;
+    }
+
+    .category-title {
+      font-size: 2.6rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, #e2e8f0, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .category-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .allocator-container {
+      max-width: 820px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ═══ WIZARD CARD ═══ */
+    .wizard-card {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95), rgba(21, 28, 44, 0.9));
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 80px rgba(59, 130, 246, 0.04);
+      backdrop-filter: blur(20px);
+    }
+
+    /* ═══ STEPS ═══ */
+    .step {
+      display: none;
+      animation: fadeSlide 0.4s ease;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    .step-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .step-sub {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    /* ═══ AMOUNT INPUT ═══ */
+    .amount-input-lg {
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 1.1rem 1.25rem;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .amount-input-lg:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .amount-input-lg::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 1.1rem;
+    }
+
+    /* ═══ PATH CARDS ═══ */
+    .path-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    .path-card {
+      background: linear-gradient(145deg, rgba(21, 28, 44, 0.8), rgba(15, 23, 42, 0.9));
+      border: 2px solid rgba(59, 130, 246, 0.12);
+      border-radius: 16px;
+      padding: 2.25rem 1.5rem 2.5rem;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .path-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.08), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.35s;
+    }
+
+    .path-card:hover::before {
+      opacity: 1;
+    }
+
+    .path-card:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(59, 130, 246, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.1);
+    }
+
+    .path-card .path-icon {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .path-card .path-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .path-card .path-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .path-card::after {
+      content: '→';
+      position: absolute;
+      bottom: 1rem;
+      right: 1.25rem;
+      font-size: 1.3rem;
+      color: #3b82f6;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: all 0.3s;
+    }
+
+    .path-card:hover::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ═══ FORM ELEMENTS ═══ */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+
+    .form-select,
+    .form-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      color: var(--text);
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      transition: all 0.25s ease;
+    }
+
+    .form-select:focus,
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* ═══ CHIP ROW ═══ */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .chip {
+      background: rgba(21, 28, 44, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      padding: 0.4rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.25s ease;
+    }
+
+    .chip:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .chip.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.5);
+      color: #60a5fa;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+    }
+
+    /* ═══ STOCK SEARCH ═══ */
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .search-input {
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 0.9rem 1rem 0.9rem 2.75rem;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-status {
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ═══ SELECTED STOCKS LIST ═══ */
+    .stock-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stock-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    .stock-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .stock-item-ticker {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent);
+      min-width: 60px;
+    }
+
+    .stock-item-name {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stock-item-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stock-item-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .stock-item-sector {
+      font-size: 0.75rem;
+      background: var(--surface-3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--text-dim);
+    }
+
+    .stock-item-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.25rem 0.4rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .stock-item-remove:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    /* ═══ BUTTONS ═══ */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border-radius: 14px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.92;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-back {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.6rem 1.25rem;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ═══ COUNTER ═══ */
+    .stock-counter {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stock-counter strong {
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ═══ PROGRESS BAR ═══ */
+    .progress-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .progress-dot {
+      flex: 1;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(30, 41, 59, 0.8);
+      transition: all 0.4s ease;
+    }
+
+    .progress-dot.done {
+      background: #3b82f6;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .progress-dot.active {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+
+    /* ═══ STOCK CARDS (results) ═══ */
+    .stock-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .stock-card:hover {
+      border-color: var(--accent);
+    }
+
+    .stock-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .stock-card-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .stock-card-ticker {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .stock-card-name {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stock-card-sector {
+      font-size: 0.75rem;
+      background: var(--surface-3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--text-dim);
+    }
+
+    .stock-card-right {
+      text-align: right;
+    }
+
+    .stock-card-amount {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .stock-card-pct {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stock-card-reasoning {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+
+    .stock-card-alloc-logic {
+      font-size: 0.82rem;
+      color: #C4B5FD;
+      font-style: italic;
+      margin-bottom: 0.75rem;
+    }
+
+    .stock-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .meta-item strong {
+      color: var(--text);
+    }
+
+    .risk-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      margin-right: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .scores-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+    }
+
+    .score-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .score-bar-bg {
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+
+    .score-val {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim);
+      text-align: right;
+    }
+
+    .entry-exit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .entry-exit-box {
+      padding: 0.6rem 0.75rem;
+      background: var(--surface-2);
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    .entry-exit-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+
+    .entry-exit-text {
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .drop-analysis {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+
+    .drop-analysis.value_opportunity {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #34d399;
+    }
+
+    .drop-analysis.falling_knife {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .portfolio-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .pstat {
+      background: var(--surface-2);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .pstat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .pstat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 0.25rem;
+    }
+
+    .pstat-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .diff-section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--surface-1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 8px;
+    }
+
+    .diff-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+
+    .diff-item:last-child {
+      border-bottom: none;
+    }
+
+    .diff-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .diff-badge.added {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .diff-badge.removed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .diff-badge.changed {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 900px) {
+      .path-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .portfolio-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .entry-exit-row {
+        grid-template-columns: 1fr;
+      }
+
+      .scores-row {
+        flex-wrap: wrap;
+      }
+
+      .allocator-container {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-left">
+      <a href="/" style="text-decoration:none;">
+        <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+      </a>
+      <span class="logo-sub">Institutional Intelligence Terminal</span>
+    </div>
+  </header>
+
+  <section class="category-header">
+    <h2 class="category-title">✦ Portfolio Creator</h2>
+    <p class="category-subtitle">Build a professionally allocated portfolio in seconds</p>
+  </section>
+
+  <main class="allocator-container">
+    <div class="wizard-card">
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!--                  STEP 1: AMOUNT + PATH                      -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="step active" id="step-1">
+        <div class="progress-bar">
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+        </div>
+
+        <div class="step-label">Step 1</div>
+        <div class="step-title">How much are you investing?</div>
+        <div class="step-sub">Enter the total amount you want to deploy into your portfolio.</div>
+
+        <input type="number" id="amount-input" class="amount-input-lg" value="10000" min="100" step="100"
+          placeholder="$10,000">
+
+        <div style="margin-top:2.5rem;">
+          <div class="step-title" style="font-size:1.25rem;">Choose your approach</div>
+          <div class="step-sub" style="margin-bottom:1rem;">How would you like to build your portfolio?</div>
+        </div>
+
+        <div class="path-grid">
+          <div class="path-card" onclick="goToPath('manual')">
+            <span class="path-icon">🛠️</span>
+            <div class="path-name">Build Your Own</div>
+            <div class="path-desc">Search and select stocks yourself. We'll optimally allocate your capital across them.
+            </div>
+          </div>
+
+          <div class="path-card" onclick="goToPath('ai')">
+            <span class="path-icon">🤖</span>
+            <div class="path-name">AI-Automated</div>
+            <div class="path-desc">Select sectors & risk. AI analyzes the market and builds a hedged portfolio for you.
+            </div>
+          </div>
+        </div>
+
+        <p id="step1-error" style="color:#ef4444;display:none;margin-top:12px;font-size:0.85rem;text-align:center;"></p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!--            STEP 2A: BUILD YOUR OWN — STOCK SEARCH           -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="step" id="step-manual">
+        <div class="progress-bar">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+        </div>
+
+        <div class="step-label">Step 2 — Build Your Own</div>
+        <div class="step-title">Search & add stocks</div>
+        <div class="step-sub">Type a ticker symbol and press Enter to add it. We'll handle the allocation math.</div>
+
+        <div class="search-wrapper">
+          <span class="search-icon">🔎</span>
+          <input type="text" id="stock-search" class="search-input" placeholder="Type a ticker (AAPL, NVDA, TSLA...)"
+            autocomplete="off">
+          <span class="search-status" id="search-status"></span>
+        </div>
+
+        <div class="stock-counter" id="stock-counter" style="display:none;">
+          <strong id="stock-count">0</strong> stocks selected · <strong id="invest-amount-label">$10,000</strong> to
+          allocate
+        </div>
+
+        <div id="selected-stocks-list" class="stock-list">
+          <div class="empty-state">
+            <span class="empty-icon">📋</span>
+            No stocks added yet. Search above to start building.
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goBack()">← Back</button>
+          <button class="btn-primary" id="finish-manual-btn" onclick="finishManual()" disabled style="max-width:300px;">
+            Build My Portfolio →
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!--            STEP 2B: AI-AUTOMATED — PREFERENCES              -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="step" id="step-ai">
+        <div class="progress-bar">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+        </div>
+
+        <!-- Friendly welcome banner -->
+        <div style="text-align:center;margin-bottom:2rem;">
+          <div style="font-size:2.8rem;margin-bottom:0.5rem;">🧠✨</div>
+          <div class="step-label">Step 2 — AI Portfolio Builder</div>
+          <div class="step-title" style="font-size:1.5rem;">Let's build your perfect portfolio!</div>
+          <div class="step-sub" style="max-width:500px;margin:0.5rem auto 0;font-size:0.9rem;">
+            Tell us what you're looking for and our AI will scan the market, find the best picks, and build a
+            diversified portfolio tailored just for you. 🚀
+          </div>
+        </div>
+
+        <!-- Strategy Card -->
+        <div
+          style="background:linear-gradient(135deg, rgba(59,130,246,0.06), rgba(139,92,246,0.04));border:1px solid rgba(59,130,246,0.15);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+            <span style="font-size:1.2rem;">⚙️</span>
+            <span style="font-weight:700;font-size:0.95rem;">Your Strategy</span>
+            <span style="color:var(--text-muted);font-size:0.78rem;margin-left:auto;">Customize your picks</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚖️ Risk Tolerance</label>
+              <select id="risk-select" class="form-select">
+                <option value="conservative">🛡️ Conservative — Steady & safe</option>
+                <option value="moderate" selected>⚖️ Moderate — Balanced growth</option>
+                <option value="aggressive">🔥 Aggressive — Max growth</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>⏳ Time Horizon</label>
+              <select id="horizon-select" class="form-select">
+                <option value="3m">⚡ 3 Months — Quick plays</option>
+                <option value="1y" selected>📅 1 Year — Medium term</option>
+                <option value="3-5y">📈 3–5 Years — Long growth</option>
+                <option value="10y+">🏦 10+ Years — Buy & chill</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group">
+              <label>🎯 Investment Goal</label>
+              <select id="goal-select" class="form-select">
+                <option value="growth" selected>📈 Growth — Capital appreciation</option>
+                <option value="income">💰 Income — Dividends & yield</option>
+                <option value="preservation">🛡️ Preservation — Low risk</option>
+                <option value="speculation">🎲 Speculation — High reward</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>🔁 Rebalancing</label>
+              <select id="rebalance-select" class="form-select">
+                <option value="alert_rebalance">🔔 Alert me to rebalance</option>
+                <option value="set_forget">😎 Set & forget</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio Size Card -->
+        <div
+          style="background:linear-gradient(135deg, rgba(16,185,129,0.06), rgba(6,182,212,0.04));border:1px solid rgba(16,185,129,0.15);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+            <span style="font-size:1.2rem;">📊</span>
+            <span style="font-weight:700;font-size:0.95rem;">Portfolio Size</span>
+            <span style="color:var(--text-muted);font-size:0.78rem;margin-left:auto;">How many stocks?</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:1.25rem;">
+            <div style="flex:1;">
+              <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.4rem;">📦 Number of
+                Stocks</label>
+              <input type="number" id="stock-count-input" class="form-input" value="8" min="3" max="25" step="1"
+                style="width:100%;font-size:1rem;font-weight:600;text-align:center;padding:0.8rem;">
+            </div>
+            <div style="flex:2;color:var(--text-muted);font-size:0.82rem;line-height:1.6;">
+              <span style="color:var(--text);font-weight:600;">💡 Tip:</span> 5-10 stocks is great for diversification
+              without over-spreading.
+              Our AI will pick the optimal number based on your budget and risk level.
+            </div>
+          </div>
+        </div>
+
+        <!-- Sectors Card -->
+        <div
+          style="background:linear-gradient(135deg, rgba(139,92,246,0.06), rgba(236,72,153,0.04));border:1px solid rgba(139,92,246,0.15);border-radius:14px;padding:1.5rem;margin-bottom:1.75rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+            <span style="font-size:1.2rem;">📡</span>
+            <span style="font-weight:700;font-size:0.95rem;">Focus Sectors</span>
+            <span style="color:var(--text-muted);font-size:0.78rem;margin-left:auto;">Tap to select · empty = all</span>
+          </div>
+          <div class="chip-row" id="sector-include">
+            <div class="chip" data-sector="Technology">💻 Technology</div>
+            <div class="chip" data-sector="Healthcare">🏥 Healthcare</div>
+            <div class="chip" data-sector="Financials">🏦 Financials</div>
+            <div class="chip" data-sector="Consumer Cyclical">🛍️ Consumer</div>
+            <div class="chip" data-sector="Communication Services">📡 Communication</div>
+            <div class="chip" data-sector="Energy">⛽ Energy</div>
+            <div class="chip" data-sector="Defense">🛡️ Defense</div>
+            <div class="chip" data-sector="Real Estate">🏠 Real Estate</div>
+            <div class="chip" data-sector="Utilities">💡 Utilities</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goBack()">← Back</button>
+          <button class="btn-primary" id="generate-ai-btn" onclick="runAIPortfolio()"
+            style="max-width:380px;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:1.1rem;padding:1.1rem 2rem;">
+            🤖 Generate AI Portfolio →
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!--                     STEP 3: RESULTS                         -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="step" id="step-results">
+        <div class="progress-bar">
+          <div class="progress-dot done"></div>
+          <div class="progress-dot done"></div>
+          <div class="progress-dot active"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <p id="error-msg" style="color:#ef4444;display:none;margin-top:8px;font-size:14px;"></p>
+    <div id="results-section"></div>
+  </main>
+
+  <script src="/static/app.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════
+    let selectedStocks = [];      // [{symbol, name, price, sector}]
+    let currentPath = null;       // 'manual' or 'ai'
+    let previousPortfolio = null;
+    try { previousPortfolio = JSON.parse(localStorage.getItem('lastPortfolio')); } catch (e) { }
+
+    // ═══════════════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════════════
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const step = document.getElementById(id);
+      if (step) step.classList.add('active');
+    }
+
+    function goToPath(path) {
+      const amount = parseFloat(document.getElementById('amount-input').value);
+      if (!amount || amount < 100) {
+        const err = document.getElementById('step1-error');
+        err.textContent = 'Please enter at least $100 to invest.';
+        err.style.display = 'block';
+        return;
+      }
+      document.getElementById('step1-error').style.display = 'none';
+      currentPath = path;
+
+      if (path === 'manual') {
+        document.getElementById('invest-amount-label').textContent = '$' + amount.toLocaleString();
+        showStep('step-manual');
+        document.getElementById('stock-search').focus();
+      } else {
+        showStep('step-ai');
+      }
+    }
+
+    function goBack() {
+      showStep('step-1');
+      document.getElementById('error-msg').style.display = 'none';
+    }
+
+    // ═══════════════════════════════════════════════════
+    // BUILD YOUR OWN — STOCK SEARCH
+    // ═══════════════════════════════════════════════════
+    let searchTimeout = null;
+
+    document.getElementById('stock-search').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const ticker = this.value.trim().toUpperCase();
+        if (!ticker) return;
+        if (selectedStocks.find(s => s.symbol === ticker)) {
+          showSearchStatus('Already added', '#fbbf24');
+          return;
+        }
+        addStock(ticker);
+      }
+    });
+
+    async function addStock(ticker) {
+      showSearchStatus('Looking up...', 'var(--text-muted)');
+      try {
+        const res = await fetch(`/api/stock/search?q=${encodeURIComponent(ticker)}`);
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          showSearchStatus(data.error || 'Not found', '#ef4444');
+          return;
+        }
+        selectedStocks.push({
+          symbol: data.symbol,
+          name: data.name,
+          price: data.price,
+          sector: data.sector,
+        });
+        document.getElementById('stock-search').value = '';
+        showSearchStatus('✓ Added!', 'var(--green)');
+        setTimeout(() => showSearchStatus(''), 1500);
+        renderStockList();
+      } catch (err) {
+        showSearchStatus('Error — try again', '#ef4444');
+      }
+    }
+
+    function removeStock(symbol) {
+      selectedStocks = selectedStocks.filter(s => s.symbol !== symbol);
+      renderStockList();
+    }
+
+    function renderStockList() {
+      const container = document.getElementById('selected-stocks-list');
+      const counter = document.getElementById('stock-counter');
+      const btn = document.getElementById('finish-manual-btn');
+
+      if (selectedStocks.length === 0) {
+        container.innerHTML = `<div class="empty-state"><span class="empty-icon">📋</span>No stocks added yet. Search above to start building.</div>`;
+        counter.style.display = 'none';
+        btn.disabled = true;
+        return;
+      }
+
+      counter.style.display = 'block';
+      document.getElementById('stock-count').textContent = selectedStocks.length;
+      btn.disabled = false;
+
+      container.innerHTML = selectedStocks.map((s, i) => `
+        <div class="stock-item" style="animation-delay:${i * 0.05}s;">
+          <div class="stock-item-left">
+            <span class="stock-item-ticker">${s.symbol}</span>
+            <span class="stock-item-name">${s.name}</span>
+          </div>
+          <div class="stock-item-meta">
+            <span class="stock-item-sector">${s.sector}</span>
+            <span class="stock-item-price">$${s.price.toLocaleString()}</span>
+            <button class="stock-item-remove" onclick="removeStock('${s.symbol}')" title="Remove">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showSearchStatus(msg, color) {
+      const el = document.getElementById('search-status');
+      el.textContent = msg;
+      el.style.color = color || 'var(--text-muted)';
+    }
+
+    // ═══════════════════════════════════════════════════
+    // PREMIUM LOADING OVERLAY
+    // ═══════════════════════════════════════════════════
+    let _loaderInterval = null;
+    let _loaderStepInterval = null;
+
+    function showPremiumLoader(title, steps) {
+      // Remove any existing loader
+      hidePremiumLoader(true);
+
+      const stepsHtml = steps.map((s, i) =>
+        `<div class="loader-step${i === 0 ? ' active' : ''}" data-idx="${i}">
+          <span class="loader-step-icon">${i === 0 ? '◉' : '○'}</span>
+          <span>${s}</span>
+        </div>`
+      ).join('');
+
+      const overlay = document.createElement('div');
+      overlay.className = 'premium-loader-overlay';
+      overlay.id = 'premium-loader';
+      overlay.innerHTML = `
+        <div class="premium-loader-container">
+          <div class="loader-ring">
+            <div class="loader-ring-inner">🤖</div>
+          </div>
+          <div class="loader-title">${title}</div>
+          <div class="loader-dots">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+          </div>
+          <div class="loader-progress-track">
+            <div class="loader-progress-fill" id="loader-progress"></div>
+          </div>
+          <div class="loader-steps" id="loader-steps">${stepsHtml}</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      document.body.style.overflow = 'hidden';
+
+      // Animate progress and steps
+      let currentStep = 0;
+      const totalSteps = steps.length;
+      const stepDuration = 4000; // ms per step
+
+      // Initial progress
+      setTimeout(() => {
+        const fill = document.getElementById('loader-progress');
+        if (fill) fill.style.width = `${((currentStep + 1) / totalSteps) * 85}%`;
+      }, 300);
+
+      _loaderStepInterval = setInterval(() => {
+        currentStep++;
+        if (currentStep >= totalSteps) {
+          clearInterval(_loaderStepInterval);
+          return;
+        }
+
+        const stepEls = document.querySelectorAll('#loader-steps .loader-step');
+        stepEls.forEach((el, i) => {
+          if (i < currentStep) {
+            el.className = 'loader-step done';
+            el.querySelector('.loader-step-icon').textContent = '✓';
+          } else if (i === currentStep) {
+            el.className = 'loader-step active';
+            el.querySelector('.loader-step-icon').textContent = '◉';
+          }
+        });
+
+        const fill = document.getElementById('loader-progress');
+        if (fill) fill.style.width = `${((currentStep + 1) / totalSteps) * 85}%`;
+      }, stepDuration);
+    }
+
+    function hidePremiumLoader(instant) {
+      clearInterval(_loaderStepInterval);
+      const overlay = document.getElementById('premium-loader');
+      if (!overlay) return;
+
+      // Set progress to 100%
+      const fill = document.getElementById('loader-progress');
+      if (fill) fill.style.width = '100%';
+
+      // Mark all steps done
+      document.querySelectorAll('#loader-steps .loader-step').forEach(el => {
+        el.className = 'loader-step done';
+        el.querySelector('.loader-step-icon').textContent = '✓';
+      });
+
+      if (instant) {
+        overlay.remove();
+        document.body.style.overflow = '';
+        return;
+      }
+
+      setTimeout(() => {
+        overlay.classList.add('hiding');
+        setTimeout(() => {
+          overlay.remove();
+          document.body.style.overflow = '';
+        }, 350);
+      }, 400);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // BUILD YOUR OWN — FINISH
+    // ═══════════════════════════════════════════════════
+    async function finishManual() {
+      const amount = parseFloat(document.getElementById('amount-input').value);
+      const btn = document.getElementById('finish-manual-btn');
+      const tickers = selectedStocks.map(s => s.symbol);
+
+      btn.disabled = true;
+      document.getElementById('error-msg').style.display = 'none';
+
+      showPremiumLoader('Building Your Portfolio', [
+        'Fetching live stock prices...',
+        'Analyzing risk & correlation...',
+        'AI optimizing capital allocation...',
+        'Building investment thesis...',
+        'Finalizing portfolio...',
+      ]);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 90000);
+
+      try {
+        const response = await fetch('/api/portfolio/allocate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount,
+            mode: 'manual',
+            risk: 'moderate',
+            sectors: [],
+            horizon: '1y',
+            goal: 'growth',
+            exclude_sectors: [],
+            existing_holdings: tickers,
+            rebalance_mode: 'alert_rebalance'
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const data = await response.json();
+        hidePremiumLoader();
+        if (!response.ok || data.status === 'error') {
+          showError(data.error || 'Server error');
+          return;
+        }
+        showStep('step-results');
+        renderPortfolioResults(data);
+        localStorage.setItem('lastPortfolio', JSON.stringify(data));
+      } catch (err) {
+        clearTimeout(timeout);
+        hidePremiumLoader(true);
+        showError(err.name === 'AbortError' ? 'Request timed out. Server may be busy.' : err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // AI-AUTOMATED — GENERATE
+    // ═══════════════════════════════════════════════════
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+
+    async function runAIPortfolio() {
+      const amount = parseFloat(document.getElementById('amount-input').value);
+      const risk = document.getElementById('risk-select').value;
+      const horizon = document.getElementById('horizon-select').value;
+      const goal = document.getElementById('goal-select').value;
+      const rebalance_mode = document.getElementById('rebalance-select').value;
+      const num_stocks = parseInt(document.getElementById('stock-count-input').value) || 8;
+      const sectors = Array.from(document.querySelectorAll('#sector-include .chip.active'))
+        .map(el => el.dataset.sector);
+
+      const btn = document.getElementById('generate-ai-btn');
+      btn.disabled = true;
+      document.getElementById('error-msg').style.display = 'none';
+
+      showPremiumLoader('AI is Building Your Portfolio', [
+        'Scanning 10,000+ stocks across all sectors...',
+        'Analyzing current market conditions & news...',
+        'Running risk-adjusted allocation model...',
+        'Generating per-stock investment thesis...',
+        'Building world context & risk assessment...',
+        'Finalizing your personalized portfolio...',
+      ]);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 90000);
+
+      try {
+        const response = await fetch('/api/portfolio/allocate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount, mode: 'ai', risk, sectors, horizon, goal,
+            num_stocks,
+            exclude_sectors: [],
+            existing_holdings: [],
+            rebalance_mode
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const data = await response.json();
+        hidePremiumLoader();
+        if (!response.ok || data.status === 'error') {
+          showError(data.error || 'Server error');
+          return;
+        }
+        showStep('step-results');
+        renderPortfolioResults(data);
+        localStorage.setItem('lastPortfolio', JSON.stringify(data));
+      } catch (err) {
+        clearTimeout(timeout);
+        hidePremiumLoader(true);
+        showError(err.name === 'AbortError' ? 'Request timed out. Server may be busy.' : err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    // ═══════════════════════════════════════════════════
+    // RENDER RESULTS (shared by both paths)
+    // ═══════════════════════════════════════════════════
+    function renderPortfolioResults(data) {
+      const el = document.getElementById('results-section');
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const wc = data.world_context || {};
+      const goalLabel = { growth: 'Growth', income: 'Income', preservation: 'Preservation', speculation: 'Speculation' }[data.goal] || data.goal;
+      const horizonLabel = { '3m': '3 Months', '1y': '1 Year', '3-5y': '3-5 Years', '10y+': '10+ Years' }[data.horizon] || data.horizon;
+
+      let html = '';
+
+      // ═══ HEADER STATS ═══
+      html += `
+        <div style="margin-top:2rem;">
+          <h2>✦ Your Portfolio — ${capitalize(data.risk_level)} · ${goalLabel} · ${horizonLabel}</h2>
+          <div class="portfolio-stats-grid">
+            <div class="pstat">
+              <div class="pstat-label">Total Invested</div>
+              <div class="pstat-value">$${formatMoney(data.amount)}</div>
+            </div>
+            <div class="pstat" style="border-color:var(--green);">
+              <div class="pstat-label">Expected Upside</div>
+              <div class="pstat-value" style="color:var(--green);">+${data.expected_upside_pct}%</div>
+              <div class="pstat-sub">Analyst consensus · 12mo</div>
+            </div>
+            <div class="pstat">
+              <div class="pstat-label">Volatility</div>
+              <div class="pstat-value">${capitalize(data.expected_volatility || 'medium')}</div>
+            </div>
+            <div class="pstat">
+              <div class="pstat-label">Diversification</div>
+              <div class="pstat-value">${data.diversification_score || '—'}/10</div>
+            </div>
+            <div class="pstat">
+              <div class="pstat-label">Est. Dividend</div>
+              <div class="pstat-value">${data.estimated_dividend_yield || 0}%</div>
+              <div class="pstat-sub">${data.num_stocks} stocks · $${formatMoney(data.cash_reserve)} cash</div>
+            </div>
+          </div>
+        </div>`;
+
+      // ═══ MACRO CONTEXT ═══
+      html += `
+        <div style="margin-top:2rem;padding:1.5rem;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);">
+          <h3 style="margin-bottom:1rem;">🌍 Global Market Context</h3>
+          <p style="color:var(--text-muted);line-height:1.5;">${wc.macro_context || 'Generating...'}</p>
+        </div>`;
+
+      // ═══ RISK WARNINGS ═══
+      if (wc.risk_warnings && wc.risk_warnings.length) {
+        html += `
+          <div style="margin-top:2rem;">
+            <h3 style="margin-bottom:1rem;color:var(--red);">⚠️ Risk Warnings</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+              ${wc.risk_warnings.map(w => `
+                <div style="padding:1rem;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;">
+                  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+                    <span style="font-size:1.25rem;">${w.icon}</span>
+                    <strong>${w.title}</strong>
+                  </div>
+                  <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem;">${w.body}</p>
+                  ${(w.affected_tickers || []).length ? `<div style="font-size:0.8rem;">${w.affected_tickers.map(t => `<span style="background:rgba(239,68,68,0.1);color:var(--red);padding:2px 6px;border-radius:4px;margin-right:4px;">${t}</span>`).join('')}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }
+
+      // ═══ TAILWINDS & TRENDS ═══
+      html += `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem;">
+          <div>
+            <h3 style="margin-bottom:1rem;color:var(--green);">🚀 Tailwinds</h3>
+            ${(wc.tailwinds || []).map(t => `
+              <div style="padding:1rem;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:8px;margin-bottom:0.75rem;">
+                <strong>${t.icon} ${t.title}</strong>
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-top:0.5rem;">${t.body}</p>
+              </div>
+            `).join('')}
+          </div>
+          <div>
+            <h3 style="margin-bottom:1rem;color:#8b5cf6;">🔥 Mega Trends</h3>
+            ${(wc.mega_trends || []).map(t => `
+              <div style="padding:1rem;background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);border-radius:8px;margin-bottom:0.75rem;">
+                <strong>${t.icon} ${t.title}</strong>
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-top:0.5rem;">${t.body}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+
+      // ═══ STOCK CARDS ═══
+      html += `<div style="margin-top:3rem;"><h3 style="margin-bottom:1rem;">📊 Portfolio Holdings</h3>`;
+      (data.allocations || []).forEach((a, i) => {
+        const scores = a.scores || {};
+        const flags = a.risk_flags || [];
+        const drop = a.drop_analysis;
+        const amt = a.amount || a.dollar_amount || 0;
+        const pct = a.allocation_percent || a.weight_pct || 0;
+        html += `
+          <div class="stock-card" style="animation:slideIn 0.4s ease ${i * 0.08}s both;">
+            <div class="stock-card-header">
+              <div class="stock-card-left">
+                <span class="stock-card-ticker" onclick="openStock('${a.symbol}')">${a.symbol}</span>
+                <span class="stock-card-name">${a.company_name || a.name || ''}</span>
+                <span class="stock-card-sector">${a.sector || ''}</span>
+              </div>
+              <div class="stock-card-right">
+                <div class="stock-card-amount">$${formatMoney(amt)}</div>
+                <div class="stock-card-pct">${pct}% · ${a.shares || 0} shares @ $${a.price || '—'}</div>
+              </div>
+            </div>
+            <div class="stock-card-reasoning">${a.reasoning || a.reason || ''}</div>
+            ${a.allocation_logic ? `<div class="stock-card-alloc-logic">📐 ${a.allocation_logic}</div>` : ''}
+            ${flags.length ? `<div style="margin-bottom:0.5rem;">${flags.map(f => `<span class="risk-flag">⚠ ${f}</span>`).join('')}</div>` : ''}
+            <div class="scores-row">
+              ${renderScore('Momentum', scores.momentum)}
+              ${renderScore('Fundamentals', scores.fundamentals)}
+              ${renderScore('Sentiment', scores.sentiment)}
+              ${renderScore('Valuation', scores.valuation)}
+            </div>
+            <div class="entry-exit-row">
+              <div class="entry-exit-box">
+                <div class="entry-exit-label">▸ Entry Strategy</div>
+                <div class="entry-exit-text">${a.entry_strategy || 'Buy at market'}</div>
+              </div>
+              <div class="entry-exit-box">
+                <div class="entry-exit-label">✕ Exit Signal</div>
+                <div class="entry-exit-text">${a.exit_signal || 'Review if fundamentals change'}</div>
+              </div>
+            </div>
+            ${drop ? `
+              <div class="drop-analysis ${drop.classification || ''}">
+                <strong>${drop.classification === 'value_opportunity' ? '💎 Value Opportunity' : '🔪 Falling Knife'}</strong>
+                <div style="margin-top:0.25rem;">${drop.reason || ''}</div>
+              </div>
+            ` : ''}
+          </div>`;
+      });
+
+      html += `
+        <div style="margin-top:1rem;padding:1rem;background:var(--surface-2);border-radius:8px;border:1px dashed var(--border);text-align:center;">
+          💵 Cash Reserve: <strong>$${formatMoney(data.cash_reserve)}</strong> — Held for safety & opportunities
+        </div>
+      </div>`;
+
+      // ═══ SECTOR BREAKDOWN ═══
+      html += `
+        <div style="margin-top:2rem;">
+          <h3 style="margin-bottom:1rem;">🥧 Sector Distribution</h3>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            ${(data.sector_breakdown || []).map(s => `
+              <div style="display:flex;align-items:center;gap:1rem;">
+                <span style="width:140px;font-size:0.9rem;color:var(--text-muted);">${s.sector}</span>
+                <div style="flex:1;height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden;">
+                  <div style="height:100%;width:${s.pct}%;background:var(--accent);border-radius:4px;"></div>
+                </div>
+                <span style="width:60px;text-align:right;font-family:var(--mono);font-weight:600;">${s.pct}%</span>
+                <span style="width:80px;text-align:right;font-size:0.85rem;color:var(--text-muted);">$${formatMoney(s.amount)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+
+      // ═══ AI THESIS ═══
+      html += `
+        <div style="margin-top:2rem;padding:1.5rem;background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;">
+          <h3 style="margin-bottom:1rem;color:#c4b5fd;">🤖 AI Investment Thesis</h3>
+          <p style="color:var(--text);line-height:1.6;margin-bottom:1rem;">${wc.portfolio_thesis || data.ai_rationale || ''}</p>
+          ${data.ai_risk_note ? `
+            <div style="padding:0.75rem;background:rgba(239,68,68,0.1);border-left:3px solid var(--red);border-radius:4px;color:#fca5a5;font-size:0.9rem;">
+              ⚠️ Key risk: ${data.ai_risk_note}
+            </div>` : ''}
+        </div>`;
+
+      // ═══ WHAT CHANGED DIFF ═══
+      if (previousPortfolio && previousPortfolio.allocations) {
+        const diffHtml = buildDiff(previousPortfolio, data);
+        if (diffHtml) html += diffHtml;
+      }
+      previousPortfolio = data;
+
+      // ═══ ACTIONS ═══
+      html += `
+        <div style="margin-top:3rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+          <button onclick="startOver()" class="btn-primary" style="max-width:220px;padding:12px 24px;">↩ Start Over</button>
+          <button onclick="addToWatchlist()" class="btn-primary" style="max-width:250px;padding:12px 24px;background:var(--surface-3);color:var(--text);border:1px solid var(--border);">👁 Add All to Watchlist</button>
+          <button onclick="window.print()" class="btn-primary" style="max-width:200px;padding:12px 24px;background:var(--surface-3);color:var(--text);border:1px solid var(--border);">📄 Export PDF</button>
+        </div>`;
+
+      el.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════
+    function renderScore(label, val) {
+      val = val || 0;
+      const color = val >= 7 ? 'var(--green)' : val >= 4 ? 'var(--accent)' : 'var(--red)';
+      return `<div class="score-item"><div class="score-label">${label}</div><div class="score-bar-bg"><div class="score-bar-fill" style="width:${val * 10}%;background:${color};"></div></div><div class="score-val">${val}/10</div></div>`;
+    }
+
+    function buildDiff(prev, curr) {
+      const prevTickers = new Set((prev.allocations || []).map(a => a.symbol));
+      const currTickers = new Set((curr.allocations || []).map(a => a.symbol));
+      const items = [];
+      (curr.allocations || []).forEach(a => { if (!prevTickers.has(a.symbol)) items.push({ badge: 'added', text: `${a.symbol} added at ${a.allocation_percent || a.weight_pct}%`, detail: a.reasoning || a.reason || '' }); });
+      (prev.allocations || []).forEach(a => { if (!currTickers.has(a.symbol)) items.push({ badge: 'removed', text: `${a.symbol} removed`, detail: '' }); });
+      (curr.allocations || []).forEach(ca => { if (prevTickers.has(ca.symbol)) { const pa = (prev.allocations || []).find(a => a.symbol === ca.symbol); if (pa) { const oldPct = pa.allocation_percent || pa.weight_pct || 0; const newPct = ca.allocation_percent || ca.weight_pct || 0; const diff = newPct - oldPct; if (Math.abs(diff) >= 1) items.push({ badge: 'changed', text: `${ca.symbol}: ${oldPct}%→${newPct}% (${diff > 0 ? '+' : ''}${diff.toFixed(1)}%)`, detail: '' }); } } });
+      if (!items.length) return '';
+      return `<div class="diff-section"><h3 style="margin-bottom:1rem;color:#fbbf24;">🔄 What Changed Since Last Portfolio</h3>${items.map(i => `<div class="diff-item"><span class="diff-badge ${i.badge}">${i.badge.toUpperCase()}</span><span style="color:var(--text);">${i.text}</span>${i.detail ? `<span style="color:var(--text-muted);font-size:0.82rem;margin-left:auto;">${i.detail.slice(0, 80)}...</span>` : ''}</div>`).join('')}</div>`;
+    }
+
+    function formatMoney(n) { if (!n && n !== 0) return '0'; return parseFloat(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+    function openStock(ticker) { window.location.href = `/stock/${ticker}`; }
+    function startOver() {
+      selectedStocks = [];
+      document.getElementById('results-section').innerHTML = '';
+      showStep('step-1');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function addToWatchlist() {
+      const tickers = Array.from(document.querySelectorAll('.stock-card-ticker')).map(el => el.textContent);
+      fetch('/api/watchlist/build', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: tickers.join(','), count: tickers.length, risk: 'medium' }) }).then(() => alert('✅ All stocks added to your watchlist!'));
+    }
+  </script>
+  <script src="/static/ai_chat.js"></script>
+</body>
+
+</html>

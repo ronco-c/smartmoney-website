@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Money Terminal — Big Money Movers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .category-header {
+            padding: 3rem 1.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--surface-2) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .category-title {
+            font-size: 2.5rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .picks-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" style="text-decoration:none;">
+                <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+            </a>
+            <span class="logo-sub">Institutional Intelligence Terminal</span>
+        </div>
+    </header>
+
+    <section class="category-header">
+        <h2 class="category-title">💰 Big Money Movers</h2>
+        <p class="category-subtitle">Institutional buys >30% increase, >$10M value changes.</p>
+    </section>
+
+    <main class="picks-container" style="max-width: 1400px;">
+        <div class="bmm-dashboard">
+            <!-- Summary Stats -->
+            <div class="bmm-stats-grid" id="bmm-stats">
+                <div class="bmm-stat-card">
+                    <div class="bmm-stat-title">Total Capital Flow</div>
+                    <div class="bmm-stat-val" id="stat-capital">--</div>
+                </div>
+                <div class="bmm-stat-card">
+                    <div class="bmm-stat-title">Top Active Institution</div>
+                    <div class="bmm-stat-val" id="stat-inst">--</div>
+                </div>
+                <div class="bmm-stat-card">
+                    <div class="bmm-stat-title">Total Moves Detected</div>
+                    <div class="bmm-stat-val" id="stat-moves">--</div>
+                </div>
+                <div class="bmm-stat-card">
+                    <div class="bmm-stat-title">Avg Position Increase</div>
+                    <div class="bmm-stat-val" id="stat-avg-inc">--</div>
+                </div>
+            </div>
+
+            <!-- Toolbar (Search/Filter) -->
+            <div class="bmm-toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="bmm-search" placeholder="Search by Ticker or Institution..."
+                        onkeyup="filterMovers()">
+                </div>
+                <div class="bmm-filter-info" id="filter-info"></div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="card card-movers">
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="bmm-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%">Asset</th>
+                                    <th style="width: 20%; text-align: center;">Signal</th>
+                                    <th style="width: 25%">Institution</th>
+                                    <th style="text-align: right;" id="pos-change-header">Position Change (13F Q-o-Q)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="big-money-movers">
+                                <tr>
+                                    <td colspan="4" class="loading-shimmer">Scanning institutional position changes...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        let allMovers = []; // Store data globally for filtering
+        let currentQuarterInfo = "";
+        let prevQuarterInfo = "";
+
+        async function loadBigMoneyMoversPage() {
+            const el = document.getElementById("big-money-movers");
+            const data = await apiFetch("/api/big-money-movers");
+
+            if (!data || !data.movers || !data.movers.length) {
+                el.innerHTML = '<tr><td colspan="4" class="loading-shimmer">No big money moves detected yet. Data is being loaded...</td></tr>';
+                return;
+            }
+
+            allMovers = data.movers;
+            currentQuarterInfo = data.current_quarter || "Current 13F";
+            prevQuarterInfo = data.previous_quarter || "Previous 13F";
+
+            // Update DOM headers if necessary
+            const headersStr = `Position Change <br><span style="font-size:8px; opacity:0.7">(${prevQuarterInfo} → ${currentQuarterInfo})</span>`;
+            document.getElementById("pos-change-header").innerHTML = headersStr;
+
+            // Calculate and display top-level stats
+            calculateStats(allMovers);
+
+            // Render table
+            renderTable(allMovers);
+        }
+
+        function calculateStats(movers) {
+            if (!movers.length) return;
+
+            let totalVal = 0;
+            let totalIncreasePct = 0;
+            let instCounts = {};
+
+            movers.forEach(m => {
+                totalVal += m.current_value;
+                if (m.change_pct < 9999) { // Exclude new positions from avg increase math safely
+                    totalIncreasePct += m.change_pct;
+                }
+                const instName = m.institution || "Unknown";
+                instCounts[instName] = (instCounts[instName] || 0) + 1;
+            });
+
+            // Find top institution
+            let topInst = "--";
+            let maxCount = 0;
+            for (const [inst, count] of Object.entries(instCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    topInst = inst;
+                }
+            }
+
+            const avgInc = movers.filter(m => m.change_pct < 9999).length > 0
+                ? (totalIncreasePct / movers.filter(m => m.change_pct < 9999).length)
+                : 0;
+
+            document.getElementById("stat-capital").innerText = fmtMoney(totalVal);
+            document.getElementById("stat-inst").innerText = topInst;
+            document.getElementById("stat-moves").innerText = movers.length;
+            document.getElementById("stat-avg-inc").innerText = avgInc > 0 ? "+" + fmtPct(avgInc) : "N/A";
+
+            document.getElementById("filter-info").innerText = `Showing ${movers.length} movers`;
+        }
+
+        function filterMovers() {
+            const query = document.getElementById("bmm-search").value.toLowerCase();
+            if (!query) {
+                renderTable(allMovers);
+                return;
+            }
+
+            const filtered = allMovers.filter(m =>
+                m.ticker.toLowerCase().includes(query) ||
+                (m.institution && m.institution.toLowerCase().includes(query)) ||
+                (m.name && m.name.toLowerCase().includes(query))
+            );
+
+            document.getElementById("filter-info").innerText = `Found ${filtered.length} results`;
+            renderTable(filtered);
+        }
+
+        function renderTable(movers) {
+            const el = document.getElementById("big-money-movers");
+
+            if (movers.length === 0) {
+                el.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: var(--text-muted);">No matches found.</td></tr>`;
+                return;
+            }
+
+            // Cap display at 100 to keep UI snappy, even if filtered
+            const displayMovers = movers.slice(0, 100);
+
+            el.innerHTML = displayMovers.map(m => {
+                const changePct = m.change_pct > 9999 ? 'NEW POSITION' : '+' + fmtPct(m.change_pct);
+                const isNew = m.change_pct > 9999;
+
+                // Signal pill
+                const signalClass = m.change_pct >= 1000 ? 'sig-mega' : (m.change_pct >= 500 ? 'sig-strong' : (m.change_pct >= 100 ? 'sig-big' : 'sig-acc'));
+                const signalText = escHtml(m.signal || '');
+
+                const priceStr = m.price ? ` <span class="mover-price-small">${fmtPrice(m.price)}</span>` : '';
+                const dailyChangeStr = m.daily_change_pct !== undefined
+                    ? `<span class="mover-daily ${m.daily_change_pct >= 0 ? 'up' : 'down'}">${m.daily_change_pct > 0 ? '+' : ''}${m.daily_change_pct.toFixed(2)}% today</span>`
+                    : '';
+
+                return `
+                <tr onclick="window.location='/stock/${m.ticker}'" style="cursor:pointer">
+                    <td>
+                        <div class="mover-asset">
+                            <div class="mover-sym-large">${m.ticker}</div>
+                            <div class="mover-co-name">${escHtml(m.name || m.ticker)}</div>
+                            <div class="mover-mkt-data">${priceStr} ${dailyChangeStr}</div>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="sig-badge ${signalClass}">${signalText}</span>
+                    </td>
+                    <td>
+                        <div class="mover-inst-name">${escHtml(m.institution || 'Unknown Institution')}</div>
+                        <div class="mover-val-large">${fmtMoney(m.current_value)} value</div>
+                    </td>
+                    <td style="text-align: right;">
+                        <div class="mover-change-block">
+                            <div style="display: flex; align-items:center; gap: 6px;">
+                                <div class="mover-pct ${isNew ? 'is-new' : 'is-inc'}">${changePct}</div>
+                            </div>
+                            <div class="mover-shares-route" style="margin-top:2px;">
+                                <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
+                                  <span style="opacity:0.6; font-size:9px;">${prevQuarterInfo}</span>
+                                  <span>${fmtShares(m.prev_shares)}</span>
+                                </div>
+                                <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
+                                  <span style="opacity:0.6; font-size:9px;">${currentQuarterInfo}</span>
+                                  <span style="color:#e2e8f0;">${fmtShares(m.current_shares)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join("");
+        }
+
+        loadBigMoneyMoversPage();
+    </script>
+</body>
+
+</html>

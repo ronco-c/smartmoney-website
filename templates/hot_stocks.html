@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Money Terminal — Hot Stocks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .category-header {
+            padding: 3rem 1.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--surface-2) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .category-title {
+            font-size: 2.5rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .picks-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .hot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .hot-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .hot-item:hover {
+            background: var(--surface-3);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .hot-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .hot-sym {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            width: 70px;
+        }
+
+        .hot-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .hot-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            text-align: right;
+        }
+
+        .hot-price {
+            font-family: var(--mono);
+            font-size: 1.1rem;
+            color: var(--text);
+            width: 100px;
+        }
+
+        .hot-change {
+            font-family: var(--mono);
+            font-weight: 700;
+            font-size: 1.15rem;
+            width: 80px;
+        }
+
+        .hot-change.up {
+            color: var(--green);
+        }
+
+        .hot-change.down {
+            color: var(--red);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" style="text-decoration:none;">
+                <h1 class="logo">SMART<span class="logo-accent">MONEY</span></h1>
+            </a>
+            <span class="logo-sub">Institutional Intelligence Terminal</span>
+        </div>
+    </header>
+
+    <section class="category-header">
+        <h2 class="category-title">🔥 Hot Stocks</h2>
+        <p class="category-subtitle">High momentum stocks with significant breakout volume.</p>
+    </section>
+
+    <main class="picks-container">
+        <div class="card card-hot">
+            <div class="card-body" id="hot-stocks">
+                <div class="loading-shimmer">Scanning momentum..." </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        async function loadHotStocksPage() {
+            const el = document.getElementById("hot-stocks");
+            const data = await apiFetch("/api/hot-stocks");
+            if (!data || !data.hot_stocks || !data.hot_stocks.length) {
+                el.innerHTML = '<div class="loading-shimmer">No hot stocks available.</div>';
+                return;
+            }
+
+            el.innerHTML = '<div class="hot-list">' + data.hot_stocks.slice(0, 30).map(s => `
+        <div class="hot-item" onclick="window.location='/stock/${s.symbol}'">
+          <div class="hot-left">
+            <span class="hot-sym">${s.symbol}</span>
+            <span class="hot-name">${escHtml(s.name || '')}</span>
+          </div>
+          <div class="hot-right">
+            <span class="hot-price">${fmtPrice(s.price)}</span>
+            <span class="hot-change ${changeClass(s.change_percent)}">${fmtPct(s.change_percent)}</span>
+          </div>
+        </div>
+      `).join("") + '</div>';
+        }
+
+        loadHotStocksPage();
+    </script>
+</body>
+
+</html>
